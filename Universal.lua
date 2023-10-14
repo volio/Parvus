@@ -164,6 +164,9 @@ local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
                                         local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
                                         if OnScreen then
                                             local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
+                                            if type(Magnitude) ~= "number" or type(MinMagnitude) ~= "number" then
+    warn("Unexpected type: Magnitude is " .. type(Magnitude) .. ", MinMagnitude is " .. type(MinMagnitude))
+end
                                             if Magnitude < MinMagnitude then
                                                 MinMagnitude = Magnitude
                                                 ClosestTarget = {spawner, enemy, BodyPart, ScreenPosition}
