@@ -123,6 +123,9 @@ local function GetClosest(Enabled,
 
     if not Enabled then return end
     local CameraPosition,Closest = Camera.CFrame.Position,nil
+
+
+    
     for Index,Player in ipairs(PlayerService:GetPlayers()) do
         if Player == LocalPlayer then continue end
 
@@ -176,19 +179,6 @@ local function GetClosest(Enabled,
 
     return Closest
 end
---[[local function AimAt(Hitbox,Sensitivity)
-    if not Hitbox then return end
-    if Window.Flags["Aimbot/Thirdperson"] then
-        mousemoverel(Hitbox[3].Position,true,Sensitivity)
-        return
-    end
-
-    local MouseLocation = UserInputService:GetMouseLocation()
-    mousemoverel(Vector2.new(
-        (Hitbox[4].X - MouseLocation.X) * Sensitivity,
-        (Hitbox[4].Y - MouseLocation.Y) * Sensitivity
-    ))
-end]]
 
 local OldIndex = nil
 OldIndex = hookmetamethod(game,"__index",function(Self,Index)
@@ -214,11 +204,6 @@ OldNamecall = hookmetamethod(game,"__namecall",function(Self,...)
     if SilentAim and math.random(100) <= Window.Flags["SilentAim/HitChance"] then
         local Args,Method,Mode = {...},getnamecallmethod(),Window.Flags["SilentAim/Mode"]
 
-            print(Args[1])
-            print(Camera.CFrame.Position)
-            print(Args[2])
-            print(SilentAim)
-            
         if Self == Workspace then
             if Method == "Raycast" and table.find(Mode,Method) then
                 Args[2] = SilentAim[3].Position - Args[1]
@@ -243,23 +228,6 @@ OldNamecall = hookmetamethod(game,"__namecall",function(Self,...)
     return OldNamecall(Self,...)
 end)
 
---[[Parvus.Utilities.NewThreadLoop(0,function()
-    if not (Aimbot or Window.Flags["Aimbot/AlwaysEnabled"]) then return end
-
-    AimAt(GetClosest(
-        Window.Flags["Aimbot/Enabled"],
-        Window.Flags["Aimbot/TeamCheck"],
-        Window.Flags["Aimbot/VisibilityCheck"],
-        Window.Flags["Aimbot/DistanceCheck"],
-        Window.Flags["Aimbot/DistanceLimit"],
-        Window.Flags["Aimbot/FieldOfView"],
-        Window.Flags["Aimbot/Priority"][1],
-        Window.Flags["Aimbot/BodyParts"],
-        Window.Flags["Aimbot/Prediction"],
-        Window.Flags["Prediction/Velocity"],
-        Window.Flags["Prediction/Gravity"]
-    ),Window.Flags["Aimbot/Sensitivity"] / 100)
-end)]]
 Parvus.Utilities.NewThreadLoop(0,function()
     SilentAim = GetClosest(
         Window.Flags["SilentAim/Enabled"],
@@ -275,50 +243,13 @@ Parvus.Utilities.NewThreadLoop(0,function()
         Window.Flags["Prediction/Gravity"]
     )
 end)
---[[Parvus.Utilities.NewThreadLoop(0,function()
-    if not (Trigger or Window.Flags["Trigger/AlwaysEnabled"]) then return end
-    --if not iswindowactive() then return end
-
-    local TriggerClosest = GetClosest(
-        Window.Flags["Trigger/Enabled"],
-        Window.Flags["Trigger/TeamCheck"],
-        Window.Flags["Trigger/VisibilityCheck"],
-        Window.Flags["Trigger/DistanceCheck"],
-        Window.Flags["Trigger/DistanceLimit"],
-        Window.Flags["Trigger/FieldOfView"],
-        Window.Flags["Trigger/Priority"][1],
-        Window.Flags["Trigger/BodyParts"],
-        Window.Flags["Trigger/Prediction"],
-        Window.Flags["Prediction/Velocity"],
-        Window.Flags["Prediction/Gravity"]
-    ) if not TriggerClosest then return end
-
-    task.wait(Window.Flags["Trigger/Delay"]) mouse1press()
-    if Window.Flags["Trigger/HoldMouseButton"] then
-        while task.wait() do
-            TriggerClosest = GetClosest(
-                Window.Flags["Trigger/Enabled"],
-                Window.Flags["Trigger/TeamCheck"],
-                Window.Flags["Trigger/VisibilityCheck"],
-                Window.Flags["Trigger/DistanceCheck"],
-                Window.Flags["Trigger/DistanceLimit"],
-                Window.Flags["Trigger/FieldOfView"],
-                Window.Flags["Trigger/Priority"][1],
-                Window.Flags["Trigger/BodyParts"],
-                Window.Flags["Trigger/Prediction"],
-                Window.Flags["Prediction/Velocity"],
-                Window.Flags["Prediction/Gravity"]
-            ) if not TriggerClosest or not Trigger then break end
-        end
-    end mouse1release()
-end)]]
 
 Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
     Camera = Workspace.CurrentCamera
 end)
 
 for Index,Player in pairs(PlayerService:GetPlayers()) do
-    if Player == LocalPlayer then end
+    if Player == LocalPlayer then continue end
     Parvus.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
 end
 PlayerService.PlayerAdded:Connect(function(Player)
