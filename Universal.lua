@@ -118,31 +118,21 @@ local function IsNPCVisible(Enabled, Body)
     local direction = (Body.Position - cameraPosition).Unit
     local distance = (Body.Position - cameraPosition).Magnitude
 
-    local raycastParams = RaycastParams.new()
-    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-    raycastParams.FilterDescendantsInstances = {
-        game.Players.LocalPlayer.Character
-    }
-    raycastParams.IgnoreWater = true
-
-    local result = workspace:Raycast(cameraPosition, direction * distance,
-                                     raycastParams)
+    local result = workspace:Raycast(cameraPosition, direction * distance, WallCheckParams)
 
     if result and result.Instance == Body then return true end
 
     return false
 end
-local function CalculateTrajectory(Origin,Velocity,Time,Gravity)
+
+local function CalculateTrajectory(Origin, Velocity, Time, Gravity)
     return Origin + Velocity * Time + Gravity * Time * Time / GravityCorrection
 end
-local function GetClosest(Enabled,
-    TeamCheck,VisibilityCheck,DistanceCheck,
-    DistanceLimit,FieldOfView,Priority,BodyParts,
-    PredictionEnabled,ProjectileSpeed,ProjectileGravity
-)
 
+local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
     if not Enabled then return end
-    local CameraPosition,Closest = Camera.CFrame.Position,nil
+    local CameraPosition, Closest, MinMagnitude = Camera.CFrame.Position, nil, DistanceLimit
+
     local MissionsFolder = Workspace.Missions
     if not MissionsFolder then return end
 
@@ -152,93 +142,28 @@ local function GetClosest(Enabled,
                 local validSpawners = {
                     "AISpawner", "AISpawnerSniper", "AISpawnerElite"
                 }
-                for _, validSpawner in pairs(validSpawners) do
-                    if spawner.Name == validSpawner then
-                        local validEnemies = {"Bandit", "Shotgunner", "Elite", "Sniper"}
-                        for _, validEnemy in pairs(validEnemies) do
-                            local enemy = spawner:FindFirstChild(validEnemy)    
-                            if enemy and enemy:IsA("Model") then
-                                local humanoid =
-                                    enemy:FindFirstChild("Humanoid")
-                                if humanoid and humanoid.Health <= 0 then continue end
-
-                                for Index, BodyPart in ipairs(BodyParts) do
-                                    BodyPart = enemy:FindFirstChild(BodyPart)
-                                    if not BodyPart then continue end
-
-                                    local BodyPartPosition = BodyPart.Position
-                                    local Distance = (BodyPartPosition -
-                                                         CameraPosition).Magnitude
-                                    if IsDistanceLimited(DistanceCheck,
-                                                         Distance, DistanceLimit) then
+                if table.find(validSpawners, spawner.Name) then
+                    local validEnemies = {"Bandit", "Shotgunner", "Elite", "Sniper"}
+                    for _, validEnemy in pairs(validEnemies) do
+                        local enemy = spawner:FindFirstChild(validEnemy)    
+                        if enemy and enemy:IsA("Model") then
+                            local humanoid = enemy:FindFirstChild("Humanoid")
+                            if not humanoid or humanoid.Health <= 0 then
+                                continue
+                            end
+                            local BodyPart = enemy:FindFirstChild("Head")  -- Prioritizing head for now
+                            if BodyPart then
+                                local Distance = (BodyPart.Position - CameraPosition).Magnitude
+                                if Distance > DistanceLimit or not IsNPCVisible(VisibilityCheck, BodyPart) then
+                                    continue
+                                end
+                                local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
+                                if OnScreen then
+                                    local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
+                                    if Magnitude < MinMagnitude then
+                                        MinMagnitude = Magnitude
+                                        Closest = {spawner, enemy, BodyPart, ScreenPosition}
                                     end
-                                    if not IsNPCVisible(VisibilityCheck, BodyPart) then
-                                    end
-
-                                    ProjectileGravity = Vector3.new(0,
-                                                                    ProjectileGravity,
-                                                                    0)
-                                    BodyPartPosition =
-                                        PredictionEnabled and
-                                            CalculateTrajectory(
-                                                BodyPartPosition,
-                                                BodyPart.AssemblyLinearVelocity,
-                                                Distance / ProjectileSpeed,
-                                                ProjectileGravity) or
-                                            BodyPartPosition
-                                    local ScreenPosition, OnScreen =
-                                        Camera:WorldToViewportPoint(
-                                            BodyPartPosition)
-                                    if not OnScreen then end
-
-                                    local Magnitude = (Vector2.new(
-                                                          ScreenPosition.X,
-                                                          ScreenPosition.Y) -
-                                                          UserInputService:GetMouseLocation()).Magnitude
-                                    if Magnitude >= FieldOfView then end
-
-                                    if Priority == "Random" then
-                                        Priority =
-                                            KnownBodyParts[math.random(
-                                                #KnownBodyParts)][1]
-                                        BodyPart =
-                                            enemy:FindFirstChild(Priority)
-                                        if not BodyPart then end
-
-                                        BodyPartPosition = BodyPart.Position
-                                        BodyPartPosition =
-                                            PredictionEnabled and
-                                                CalculateTrajectory(
-                                                    BodyPartPosition,
-                                                    BodyPart.AssemblyLinearVelocity,
-                                                    Distance / ProjectileSpeed,
-                                                    ProjectileGravity) or
-                                                BodyPartPosition
-                                        ScreenPosition, OnScreen =
-                                            Camera:WorldToViewportPoint(
-                                                BodyPartPosition)
-                                    elseif Priority ~= "Closest" then
-                                        BodyPart =
-                                            enemy:FindFirstChild(Priority)
-                                        if not BodyPart then end
-
-                                        BodyPartPosition = BodyPart.Position
-                                        BodyPartPosition =
-                                            PredictionEnabled and
-                                                CalculateTrajectory(
-                                                    BodyPartPosition,
-                                                    BodyPart.AssemblyLinearVelocity,
-                                                    Distance / ProjectileSpeed,
-                                                    ProjectileGravity) or
-                                                BodyPartPosition
-                                        ScreenPosition, OnScreen =
-                                            Camera:WorldToViewportPoint(
-                                                BodyPartPosition)
-                                    end
-
-                                    FieldOfView, Closest = Magnitude, {
-                                        spawner, enemy, BodyPart, ScreenPosition
-                                    }
                                 end
                             end
                         end
