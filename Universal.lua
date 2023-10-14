@@ -123,57 +123,6 @@ local function GetClosest(Enabled,
 
     if not Enabled then return end
     local CameraPosition,Closest = Camera.CFrame.Position,nil
-    for Index,Player in ipairs(PlayerService:GetPlayers()) do
-        if Player == LocalPlayer then continue end
-
-        local Character = Player.Character if not Character then continue end
-
-        if not InEnemyTeam(TeamCheck,Player) then continue end
-
-        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-        if not Humanoid then continue end if Humanoid.Health <= 0 then continue end
-
-        for Index,BodyPart in ipairs(BodyParts) do
-            BodyPart = Character:FindFirstChild(BodyPart)
-            if not BodyPart then continue end
-
-            local BodyPartPosition = BodyPart.Position
-            local Distance = (BodyPartPosition - CameraPosition).Magnitude
-            if IsDistanceLimited(DistanceCheck,Distance,DistanceLimit) then continue end
-            if not IsVisible(VisibilityCheck,CameraPosition,BodyPartPosition,Character) then continue end
-
-            ProjectileGravity = Vector3.new(0,ProjectileGravity,0)
-            BodyPartPosition = PredictionEnabled and CalculateTrajectory(BodyPartPosition,
-            BodyPart.AssemblyLinearVelocity,Distance / ProjectileSpeed,ProjectileGravity) or BodyPartPosition
-            local ScreenPosition,OnScreen = Camera:WorldToViewportPoint(BodyPartPosition)
-            if not OnScreen then continue end
-
-            local Magnitude = (Vector2.new(ScreenPosition.X,ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
-            if Magnitude >= FieldOfView then continue end
-
-            if Priority == "Random" then
-                Priority = KnownBodyParts[math.random(#KnownBodyParts)][1]
-                BodyPart = Character:FindFirstChild(Priority)
-                if not BodyPart then continue end
-
-                BodyPartPosition = BodyPart.Position
-                BodyPartPosition = PredictionEnabled and CalculateTrajectory(BodyPartPosition,
-                BodyPart.AssemblyLinearVelocity,Distance / ProjectileSpeed,ProjectileGravity) or BodyPartPosition
-                ScreenPosition,OnScreen = Camera:WorldToViewportPoint(BodyPartPosition)
-            elseif Priority ~= "Closest" then
-                BodyPart = Character:FindFirstChild(Priority)
-                if not BodyPart then continue end
-
-                BodyPartPosition = BodyPart.Position
-                BodyPartPosition = PredictionEnabled and CalculateTrajectory(BodyPartPosition,
-                BodyPart.AssemblyLinearVelocity,Distance / ProjectileSpeed,ProjectileGravity) or BodyPartPosition
-                ScreenPosition,OnScreen = Camera:WorldToViewportPoint(BodyPartPosition)
-            end
-
-            FieldOfView,Closest = Magnitude,{Player,Character,BodyPart,ScreenPosition}
-        end
-    end
-
     local MissionsFolder = Workspace.Missions
     if not MissionsFolder then return end
 
@@ -191,11 +140,11 @@ local function GetClosest(Enabled,
                             if enemy and enemy:IsA("Model") then
                                 local humanoid =
                                     enemy:FindFirstChild("Humanoid")
-                                if humanoid and humanoid.Health <= 0 then end
+                                if humanoid and humanoid.Health <= 0 then continue end
 
                                 for Index, BodyPart in ipairs(BodyParts) do
                                     BodyPart = enemy:FindFirstChild(BodyPart)
-                                    if not BodyPart then end
+                                    if not BodyPart then continue end
 
                                     local BodyPartPosition = BodyPart.Position
                                     local Distance = (BodyPartPosition -
@@ -268,10 +217,6 @@ local function GetClosest(Enabled,
                                             Camera:WorldToViewportPoint(
                                                 BodyPartPosition)
                                     end
-
-                                    print("BodyPart:", BodyPart)
-                                    print("BodyPart.Position:", BodyPart.Position)
-                                    print("ScreenPosition:", ScreenPosition)
 
                                     FieldOfView, Closest = Magnitude, {
                                         spawner, enemy, BodyPart, ScreenPosition
