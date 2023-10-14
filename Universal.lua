@@ -388,16 +388,14 @@ end]]
 
 local OldNamecall = nil
 OldNamecall = hookmetamethod(game,"__namecall",function(Self,...)
-    if SilentAim and getnamecallmethod() == "Raycast" then
-        if math.random(100) <= Window.Flags["SilentAim/HitChance"] then
+    if getnamecallmethod() == "Raycast" then
             local Args = {...}
 
             if Args[1] == Camera.CFrame.Position then
                 Args[2] = SilentAim[3].Position - Camera.CFrame.Position
             end
-
+            
             return OldNamecall(Self,unpack(Args))
-        end
     end
 
     return OldNamecall(Self,...)
