@@ -321,18 +321,35 @@ end]]
 
 local OldNamecall = nil
 OldNamecall = hookmetamethod(game,"__namecall",function(Self,...)
-    if getnamecallmethod() == "Raycast" then
-            local Args = {...}
+    if checkcaller() then return OldNamecall(Self,...) end
+
+    if SilentAim and math.random(100) <= Window.Flags["SilentAim/HitChance"] then
+        local Args,Method,Mode = {...},getnamecallmethod(),Window.Flags["SilentAim/Mode"]
 
             print(Args[1])
             print(Camera.CFrame.Position)
             print(Args[2])
-            print(SilentAim[3].Position)
-            if Args[1] == Camera.CFrame.Position then
-                Args[2] = SilentAim[3].Position - Camera.CFrame.Position
-
+            print(SilentAim)
+            
+        if Self == Workspace then
+            if Method == "Raycast" and table.find(Mode,Method) then
+                Args[2] = SilentAim[3].Position - Args[1]
+                return OldNamecall(Self,unpack(Args))
+            elseif (Method == "FindPartOnRayWithIgnoreList" and table.find(Mode,Method))
+            or (Method == "FindPartOnRayWithWhitelist" and table.find(Mode,Method))
+            or (Method == "FindPartOnRay" and table.find(Mode,Method)) then
+                Args[1] = Ray.new(Args[1].Origin,SilentAim[3].Position - Args[1].Origin)
                 return OldNamecall(Self,unpack(Args))
             end
+        elseif Self == Camera then
+            if (Method == "ScreenPointToRay" and table.find(Mode,Method))
+            or (Method == "ViewportPointToRay" and table.find(Mode,Method)) then
+                return Ray.new(SilentAim[3].Position,SilentAim[3].Position - Camera.CFrame.Position)
+            elseif (Method == "WorldToScreenPoint" and table.find(Mode,Method))
+            or (Method == "WorldToViewportPoint" and table.find(Mode,Method)) then
+                Args[1] = SilentAim[3].Position return OldNamecall(Self,unpack(Args))
+            end
+        end
     end
 
     return OldNamecall(Self,...)
