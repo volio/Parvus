@@ -386,48 +386,21 @@ end
     ))
 end]]
 
-local OldIndex = nil
-OldIndex = hookmetamethod(game,"__index",function(Self,Index)
-    if checkcaller() then return OldIndex(Self,Index) end
-
-    if SilentAim and math.random(100) <= Window.Flags["SilentAim/HitChance"] then
-        local Mode = Window.Flags["SilentAim/Mode"]
-        if Self == Mouse then
-            if Index == "Target" and table.find(Mode,Index) then
-                return SilentAim[3]
-            elseif Index== "Hit" and table.find(Mode,Index) then
-                return SilentAim[3].CFrame
-            end
-        end
-    end
-
-    return OldIndex(Self,Index)
-end)
 local OldNamecall = nil
 OldNamecall = hookmetamethod(game,"__namecall",function(Self,...)
-    if checkcaller() then return OldNamecall(Self,...) end
+    if SilentAim and getnamecallmethod() == "Raycast" then
+        if math.random(100) <= Window.Flags["SilentAim/HitChance"] then
+            local Args = {...}
 
-    if SilentAim and math.random(100) <= Window.Flags["SilentAim/HitChance"] then
-        local Args,Method,Mode = {...},getnamecallmethod(),Window.Flags["SilentAim/Mode"]
+            if Args[1] == Camera.CFrame.Position then
+                Args[2] = SilentAim[3].Position - Camera.CFrame.Position
+            elseif AircraftTip and Args[1] == AircraftTip.WorldCFrame.Position then
+                Args[2] = SilentAim[3].Position - AircraftTip.WorldCFrame.Position
+            elseif GroundTip and Args[1] == GroundTip.WorldCFrame.Position then
+                Args[2] = SilentAim[3].Position - GroundTip.WorldCFrame.Position
+            end
 
-        if Self == Workspace then
-            if Method == "Raycast" and table.find(Mode,Method) then
-                Args[2] = SilentAim[3].Position - Args[1]
-                return OldNamecall(Self,unpack(Args))
-            elseif (Method == "FindPartOnRayWithIgnoreList" and table.find(Mode,Method))
-            or (Method == "FindPartOnRayWithWhitelist" and table.find(Mode,Method))
-            or (Method == "FindPartOnRay" and table.find(Mode,Method)) then
-                Args[1] = Ray.new(Args[1].Origin,SilentAim[3].Position - Args[1].Origin)
-                return OldNamecall(Self,unpack(Args))
-            end
-        elseif Self == Camera then
-            if (Method == "ScreenPointToRay" and table.find(Mode,Method))
-            or (Method == "ViewportPointToRay" and table.find(Mode,Method)) then
-                return Ray.new(SilentAim[3].Position,SilentAim[3].Position - Camera.CFrame.Position)
-            elseif (Method == "WorldToScreenPoint" and table.find(Mode,Method))
-            or (Method == "WorldToViewportPoint" and table.find(Mode,Method)) then
-                Args[1] = SilentAim[3].Position return OldNamecall(Self,unpack(Args))
-            end
+            return OldNamecall(Self,unpack(Args))
         end
     end
 
