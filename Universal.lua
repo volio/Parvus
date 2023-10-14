@@ -251,12 +251,13 @@ local function GetClosest(Enabled,
                     "AISpawner", "AISpawnerSniper", "AISpawnerElite"
                 }
                 for _, validSpawner in pairs(validSpawners) do
+                    print("Checking SPAWNER: ", spawner.Name)
                     if spawner.Name == validSpawner then
                         local validEnemies = {"Bandit", "Shotgunner", "Elite"}
                         for _, validEnemy in pairs(validEnemies) do
                             local enemy = spawner:FindFirstChild(validEnemy)
 
-                            print("Checking NPC: ", enemy.Name)
+                            print("Checking NPC: ", enemy)
                             
                             if enemy and enemy:IsA("Model") then
                                 local humanoid =
