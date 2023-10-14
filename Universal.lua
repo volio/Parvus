@@ -149,13 +149,11 @@ local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
                         if enemy and enemy:IsA("Model") then
                             local humanoid = enemy:FindFirstChild("Humanoid")
                             if not humanoid or humanoid.Health <= 0 then
-                                continue
                             end
                             local BodyPart = enemy:FindFirstChild("Head")  -- Prioritizing head for now
                             if BodyPart then
                                 local Distance = (BodyPart.Position - CameraPosition).Magnitude
                                 if Distance > DistanceLimit or not IsNPCVisible(VisibilityCheck, BodyPart) then
-                                    continue
                                 end
                                 local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
                                 if OnScreen then
