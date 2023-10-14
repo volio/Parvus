@@ -103,8 +103,10 @@ local function InEnemyTeam(Enabled,Player)
     if not Enabled then return true end
     return LocalPlayer.Team ~= Player.Team
 end
-local function IsDistanceLimited(Enabled,Distance,Limit)
-    if not Enabled then return end
+local function IsDistanceLimited(Enabled, Distance, Limit)
+    if not Enabled then 
+        return false
+    end
     return Distance >= Limit
 end
 local function IsVisible(Enabled,Origin,Position,Character)
@@ -153,7 +155,8 @@ local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
                             local BodyPart = enemy:FindFirstChild("Head")  -- Prioritizing head for now
                             if BodyPart then
                                 local Distance = (BodyPart.Position - CameraPosition).Magnitude
-                                if Distance > DistanceLimit or not IsNPCVisible(VisibilityCheck, BodyPart) then
+                                if IsDistanceLimited(DistanceCheck, Distance, DistanceLimit) or not IsNPCVisible(VisibilityCheck, BodyPart) then
+                                    continue
                                 end
                                 local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
                                 if OnScreen then
