@@ -133,8 +133,8 @@ end
 
 local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
     if not Enabled then return end
-    local CameraPosition, Closest, MinMagnitude = Camera.CFrame.Position, nil, DistanceLimit
-
+    local CameraPosition, Closest = Camera.CFrame.Position, nil
+    local MinMagnitude = math.huge
     local MissionsFolder = Workspace.Missions
     if not MissionsFolder then return end
 
