@@ -160,7 +160,8 @@ local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
                                 local BodyPart = enemy:FindFirstChild("Head")
                                 if BodyPart then
                                     local Distance = (BodyPart.Position - CameraPosition).Magnitude
-                                    if Distance <= DistanceLimit and IsNPCVisible(VisibilityCheck, BodyPart) then
+                                    if Distance <= DistanceLimit then
+                                        if not IsNPCVisible(VisibilityCheck, BodyPart) then end
                                         local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
                                         if OnScreen then
                                             local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
