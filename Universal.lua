@@ -115,86 +115,62 @@ end
 local function CalculateTrajectory(Origin,Velocity,Time,Gravity)
     return Origin + Velocity * Time + Gravity * Time * Time / GravityCorrection
 end
-local function GetClosest(Enabled, TeamCheck, VisibilityCheck, DistanceCheck,
-                          DistanceLimit, FieldOfView, Priority, BodyParts,
-                          PredictionEnabled, ProjectileSpeed, ProjectileGravity)
+local function GetClosest(Enabled,
+    TeamCheck,VisibilityCheck,DistanceCheck,
+    DistanceLimit,FieldOfView,Priority,BodyParts,
+    PredictionEnabled,ProjectileSpeed,ProjectileGravity
+)
+
     if not Enabled then return end
-    local CameraPosition, Closest = Camera.CFrame.Position, nil
-    local MissionsFolder = Workspace.Missions
-    if not MissionsFolder then return end
+    local CameraPosition,Closest = Camera.CFrame.Position,nil
+    for Index,Player in ipairs(PlayerService:GetPlayers()) do
+        if Player == LocalPlayer then continue end
 
-    local Players = game.Players:GetPlayers()
+        local Character = Player.Character if not Character then continue end
 
-    for _, player in pairs(Players) do
-        if player ~= game.Players.LocalPlayer and InEnemyTeam(TeamCheck, player) then
-            local character = player.Character
-            if character then
-                for Index, BodyPartName in ipairs(BodyParts) do
-                    local BodyPart = character:FindFirstChild(BodyPartName)
-                    if not BodyPart then end
+        if not InEnemyTeam(TeamCheck,Player) then continue end
 
-                    local BodyPartPosition = BodyPart.Position
-                    local Distance =
-                        (BodyPartPosition - CameraPosition).Magnitude
-                    if IsDistanceLimited(DistanceCheck, Distance, DistanceLimit) then
-                    end
-                    if not IsVisible(VisibilityCheck, CameraPosition,
-                                     BodyPartPosition, character) then end
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if not Humanoid then continue end if Humanoid.Health <= 0 then continue end
 
-                    ProjectileGravity = Vector3.new(0, ProjectileGravity, 0)
-                    BodyPartPosition = PredictionEnabled and
-                                           CalculateTrajectory(BodyPartPosition,
-                                                               BodyPart.AssemblyLinearVelocity,
-                                                               Distance /
-                                                                   ProjectileSpeed,
-                                                               ProjectileGravity) or
-                                           BodyPartPosition
-                    local ScreenPosition, OnScreen =
-                        Camera:WorldToViewportPoint(BodyPartPosition)
-                    if not OnScreen then end
+        for Index,BodyPart in ipairs(BodyParts) do
+            BodyPart = Character:FindFirstChild(BodyPart)
+            if not BodyPart then continue end
 
-                    local Magnitude = (Vector2.new(ScreenPosition.X,
-                                                   ScreenPosition.Y) -
-                                          UserInputService:GetMouseLocation()).Magnitude
-                    if Magnitude >= FieldOfView then end
+            local BodyPartPosition = BodyPart.Position
+            local Distance = (BodyPartPosition - CameraPosition).Magnitude
+            if IsDistanceLimited(DistanceCheck,Distance,DistanceLimit) then continue end
+            if not IsVisible(VisibilityCheck,CameraPosition,BodyPartPosition,Character) then continue end
 
-                    if Priority == "Random" then
-                        Priority =
-                            KnownBodyParts[math.random(#KnownBodyParts)][1]
-                        BodyPart = enemy:FindFirstChild(Priority)
-                        if not BodyPart then end
+            ProjectileGravity = Vector3.new(0,ProjectileGravity,0)
+            BodyPartPosition = PredictionEnabled and CalculateTrajectory(BodyPartPosition,
+            BodyPart.AssemblyLinearVelocity,Distance / ProjectileSpeed,ProjectileGravity) or BodyPartPosition
+            local ScreenPosition,OnScreen = Camera:WorldToViewportPoint(BodyPartPosition)
+            if not OnScreen then continue end
 
-                        BodyPartPosition = BodyPart.Position
-                        BodyPartPosition =
-                            PredictionEnabled and
-                                CalculateTrajectory(BodyPartPosition,
-                                                    BodyPart.AssemblyLinearVelocity,
-                                                    Distance / ProjectileSpeed,
-                                                    ProjectileGravity) or
-                                BodyPartPosition
-                        ScreenPosition, OnScreen =
-                            Camera:WorldToViewportPoint(BodyPartPosition)
-                    elseif Priority ~= "Closest" then
-                        BodyPart = enemy:FindFirstChild(Priority)
-                        if not BodyPart then end
+            local Magnitude = (Vector2.new(ScreenPosition.X,ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
+            if Magnitude >= FieldOfView then continue end
 
-                        BodyPartPosition = BodyPart.Position
-                        BodyPartPosition =
-                            PredictionEnabled and
-                                CalculateTrajectory(BodyPartPosition,
-                                                    BodyPart.AssemblyLinearVelocity,
-                                                    Distance / ProjectileSpeed,
-                                                    ProjectileGravity) or
-                                BodyPartPosition
-                        ScreenPosition, OnScreen =
-                            Camera:WorldToViewportPoint(BodyPartPosition)
-                    end
+            if Priority == "Random" then
+                Priority = KnownBodyParts[math.random(#KnownBodyParts)][1]
+                BodyPart = Character:FindFirstChild(Priority)
+                if not BodyPart then continue end
 
-                    FieldOfView, Closest = Magnitude, {
-                        spawner, enemy, BodyPart, ScreenPosition
-                    }
-                end
+                BodyPartPosition = BodyPart.Position
+                BodyPartPosition = PredictionEnabled and CalculateTrajectory(BodyPartPosition,
+                BodyPart.AssemblyLinearVelocity,Distance / ProjectileSpeed,ProjectileGravity) or BodyPartPosition
+                ScreenPosition,OnScreen = Camera:WorldToViewportPoint(BodyPartPosition)
+            elseif Priority ~= "Closest" then
+                BodyPart = Character:FindFirstChild(Priority)
+                if not BodyPart then continue end
+
+                BodyPartPosition = BodyPart.Position
+                BodyPartPosition = PredictionEnabled and CalculateTrajectory(BodyPartPosition,
+                BodyPart.AssemblyLinearVelocity,Distance / ProjectileSpeed,ProjectileGravity) or BodyPartPosition
+                ScreenPosition,OnScreen = Camera:WorldToViewportPoint(BodyPartPosition)
             end
+
+            FieldOfView,Closest = Magnitude,{Player,Character,BodyPart,ScreenPosition}
         end
     end
 
