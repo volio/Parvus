@@ -373,6 +373,81 @@ local function GetClosest(Enabled, TeamCheck, VisibilityCheck, DistanceCheck,
         end
     end
 
+    local Players = game.Players:GetPlayers()
+
+    for _, player in pairs(Players) do
+        if player ~= game.Players.LocalPlayer and InEnemyTeam(TeamCheck, player) then
+            local character = player.Character
+            if character then
+                for Index, BodyPartName in ipairs(BodyParts) do
+                    local BodyPart = character:FindFirstChild(BodyPartName)
+                    if not BodyPart then end
+
+                    local BodyPartPosition = BodyPart.Position
+                    local Distance =
+                        (BodyPartPosition - CameraPosition).Magnitude
+                    if IsDistanceLimited(DistanceCheck, Distance, DistanceLimit) then
+                    end
+                    if not IsVisible(VisibilityCheck, CameraPosition,
+                                     BodyPartPosition, character) then end
+
+                    ProjectileGravity = Vector3.new(0, ProjectileGravity, 0)
+                    BodyPartPosition = PredictionEnabled and
+                                           CalculateTrajectory(BodyPartPosition,
+                                                               BodyPart.AssemblyLinearVelocity,
+                                                               Distance /
+                                                                   ProjectileSpeed,
+                                                               ProjectileGravity) or
+                                           BodyPartPosition
+                    local ScreenPosition, OnScreen =
+                        Camera:WorldToViewportPoint(BodyPartPosition)
+                    if not OnScreen then end
+
+                    local Magnitude = (Vector2.new(ScreenPosition.X,
+                                                   ScreenPosition.Y) -
+                                          UserInputService:GetMouseLocation()).Magnitude
+                    if Magnitude >= FieldOfView then end
+
+                    if Priority == "Random" then
+                        Priority =
+                            KnownBodyParts[math.random(#KnownBodyParts)][1]
+                        BodyPart = enemy:FindFirstChild(Priority)
+                        if not BodyPart then end
+
+                        BodyPartPosition = BodyPart.Position
+                        BodyPartPosition =
+                            PredictionEnabled and
+                                CalculateTrajectory(BodyPartPosition,
+                                                    BodyPart.AssemblyLinearVelocity,
+                                                    Distance / ProjectileSpeed,
+                                                    ProjectileGravity) or
+                                BodyPartPosition
+                        ScreenPosition, OnScreen =
+                            Camera:WorldToViewportPoint(BodyPartPosition)
+                    elseif Priority ~= "Closest" then
+                        BodyPart = enemy:FindFirstChild(Priority)
+                        if not BodyPart then end
+
+                        BodyPartPosition = BodyPart.Position
+                        BodyPartPosition =
+                            PredictionEnabled and
+                                CalculateTrajectory(BodyPartPosition,
+                                                    BodyPart.AssemblyLinearVelocity,
+                                                    Distance / ProjectileSpeed,
+                                                    ProjectileGravity) or
+                                BodyPartPosition
+                        ScreenPosition, OnScreen =
+                            Camera:WorldToViewportPoint(BodyPartPosition)
+                    end
+
+                    FieldOfView, Closest = Magnitude, {
+                        spawner, enemy, BodyPart, ScreenPosition
+                    }
+                end
+            end
+        end
+    end
+
     return Closest
 end
 
