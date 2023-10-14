@@ -112,11 +112,11 @@ local function IsVisible(Enabled,Origin,Position,Character)
     return not Raycast(Origin,Position - Origin,
     {Character,LocalPlayer.Character})
 end
-local function IsNPCVisible(Enabled, Position)
+local function IsNPCVisible(Enabled, Body)
     if not Enabled then return true end
     local cameraPosition = workspace.CurrentCamera.CFrame.Position
-    local direction = (Position.Position - cameraPosition).Unit
-    local distance = (Position.Position - cameraPosition).Magnitude
+    local direction = (Body.Position - cameraPosition).Unit
+    local distance = (Body.Position - cameraPosition).Magnitude
 
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
@@ -128,7 +128,7 @@ local function IsNPCVisible(Enabled, Position)
     local result = workspace:Raycast(cameraPosition, direction * distance,
                                      raycastParams)
 
-    if result and result.Instance == Position then return true end
+    if result and result.Instance == Body then return true end
 
     return false
 end
