@@ -131,39 +131,44 @@ local function CalculateTrajectory(Origin, Velocity, Time, Gravity)
     return Origin + Velocity * Time + Gravity * Time * Time / GravityCorrection
 end
 
+local function IsModelEnemy(modelName)
+    local validEnemies = {"Bandit", "Shotgunner", "Elite", "Sniper"}
+    return table.find(validEnemies, modelName) ~= nil
+end
+
+local function IsValidSpawner(spawnerName)
+    local validSpawners = {
+        "AISpawner", "AISpawnerSniper", "AISpawnerElite"
+    }
+    return table.find(validSpawners, spawnerName) ~= nil
+end
+
 local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
     if not Enabled then return end
-    local CameraPosition, Closest = Camera.CFrame.Position, nil
-    local MinMagnitude = math.huge
+    local CameraPosition, ClosestTarget, MinMagnitude = Camera.CFrame.Position, nil, math.huge
     local MissionsFolder = Workspace.Missions
     if not MissionsFolder then return end
 
     for _, mapModel in pairs(MissionsFolder:GetChildren()) do
         if mapModel:IsA("Model") and mapModel:FindFirstChild("AISpawners") then
             for _, spawner in pairs(mapModel.AISpawners:GetChildren()) do
-                local validSpawners = {
-                    "AISpawner", "AISpawnerSniper", "AISpawnerElite"
-                }
-                if table.find(validSpawners, spawner.Name) then
-                    local validEnemies = {"Bandit", "Shotgunner", "Elite", "Sniper"}
-                    for _, validEnemy in pairs(validEnemies) do
-                        local enemy = spawner:FindFirstChild(validEnemy)    
-                        if enemy and enemy:IsA("Model") then
+                if IsValidSpawner(spawner.Name) then
+                    for _, enemy in pairs(spawner:GetChildren()) do
+                        if IsModelEnemy(enemy.Name) and enemy:IsA("Model") then
                             local humanoid = enemy:FindFirstChild("Humanoid")
-                            if not humanoid or humanoid.Health <= 0 then
-                            end
-                            local BodyPart = enemy:FindFirstChild("Head")  -- Prioritizing head for now
-                            if BodyPart then
-                                local Distance = (BodyPart.Position - CameraPosition).Magnitude
-                                if IsDistanceLimited(DistanceCheck, Distance, DistanceLimit) or not IsNPCVisible(VisibilityCheck, BodyPart) then
-                                    continue
-                                end
-                                local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
-                                if OnScreen then
-                                    local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
-                                    if Magnitude < MinMagnitude then
-                                        MinMagnitude = Magnitude
-                                        Closest = {spawner, enemy, BodyPart, ScreenPosition}
+                            if humanoid and humanoid.Health > 0 then
+                                local BodyPart = enemy:FindFirstChild("Head")
+                                if BodyPart then
+                                    local Distance = (BodyPart.Position - CameraPosition).Magnitude
+                                    if Distance <= DistanceLimit and IsNPCVisible(VisibilityCheck, BodyPart) then
+                                        local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(BodyPart.Position)
+                                        if OnScreen then
+                                            local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
+                                            if Magnitude < MinMagnitude then
+                                                MinMagnitude = Magnitude
+                                                ClosestTarget = {spawner, enemy, BodyPart, ScreenPosition}
+                                            end
+                                        end
                                     end
                                 end
                             end
@@ -174,7 +179,7 @@ local function GetClosest(Enabled, VisibilityCheck, DistanceLimit)
         end
     end
 
-    return Closest
+    return ClosestTarget
 end
 
 local OldIndex = nil
