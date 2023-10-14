@@ -172,9 +172,7 @@ local function GetClosest(Enabled,
                                     if IsDistanceLimited(DistanceCheck,
                                                          Distance, DistanceLimit) then
                                     end
-                                    if not IsNPCVisible(VisibilityCheck,
-                                                     CameraPosition,
-                                                     BodyPartPosition, enemy) then
+                                    if not IsNPCVisible(VisibilityCheck, BodyPart) then
                                     end
 
                                     ProjectileGravity = Vector3.new(0,
