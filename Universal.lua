@@ -112,6 +112,26 @@ local function IsVisible(Enabled,Origin,Position,Character)
     return not Raycast(Origin,Position - Origin,
     {Character,LocalPlayer.Character})
 end
+local function IsNPCVisible(Enabled, Position)
+    if not Enabled then return true end
+    local cameraPosition = workspace.CurrentCamera.CFrame.Position
+    local direction = (head.Position - cameraPosition).Unit
+    local distance = (head.Position - cameraPosition).Magnitude
+
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterDescendantsInstances = {
+        game.Players.LocalPlayer.Character
+    }
+    raycastParams.IgnoreWater = true
+
+    local result = workspace:Raycast(cameraPosition, direction * distance,
+                                     raycastParams)
+
+    if result and result.Instance == head then return true end
+
+    return false
+end
 local function CalculateTrajectory(Origin,Velocity,Time,Gravity)
     return Origin + Velocity * Time + Gravity * Time * Time / GravityCorrection
 end
@@ -152,7 +172,7 @@ local function GetClosest(Enabled,
                                     if IsDistanceLimited(DistanceCheck,
                                                          Distance, DistanceLimit) then
                                     end
-                                    if not IsVisible(VisibilityCheck,
+                                    if not IsNPCVisible(VisibilityCheck,
                                                      CameraPosition,
                                                      BodyPartPosition, enemy) then
                                     end
