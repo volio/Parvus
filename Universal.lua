@@ -27,38 +27,6 @@ local Window = Parvus.Utilities.UI:Window({
 }) do
 
     local CombatTab = Window:Tab({Name = "Combat"}) do
-        --[[local AimbotSection = CombatTab:Section({Name = "Aimbot",Side = "Left"}) do
-            AimbotSection:Toggle({Name = "Enabled",Flag = "Aimbot/Enabled",Value = false})
-            :Keybind({Flag = "Aimbot/Keybind",Value = "MouseButton2",Mouse = true,DisableToggle = true,
-            Callback = function(Key,KeyDown) Aimbot = Window.Flags["Aimbot/Enabled"] and KeyDown end})
-
-            AimbotSection:Toggle({Name = "Thirdperson Mode",Flag = "Aimbot/Thirdperson",Value = false})
-            AimbotSection:Toggle({Name = "Always Enabled",Flag = "Aimbot/AlwaysEnabled",Value = false})
-            AimbotSection:Toggle({Name = "Prediction",Flag = "Aimbot/Prediction",Value = false})
-
-            AimbotSection:Toggle({Name = "Team Check",Flag = "Aimbot/TeamCheck",Value = false})
-            AimbotSection:Toggle({Name = "Distance Check",Flag = "Aimbot/DistanceCheck",Value = false})
-            AimbotSection:Toggle({Name = "Visibility Check",Flag = "Aimbot/VisibilityCheck",Value = false})
-            AimbotSection:Slider({Name = "Sensitivity",Flag = "Aimbot/Sensitivity",Min = 0,Max = 100,Value = 20,Unit = "%"})
-            AimbotSection:Slider({Name = "Field Of View",Flag = "Aimbot/FieldOfView",Min = 0,Max = 500,Value = 100,Unit = "r"})
-            AimbotSection:Slider({Name = "Distance Limit",Flag = "Aimbot/DistanceLimit",Min = 25,Max = 1000,Value = 250,Unit = "studs"})
-
-            local PriorityList,BodyPartsList = {{Name = "Closest",Mode = "Button",Value = true}},{}
-            for Index,Value in pairs(KnownBodyParts) do
-                PriorityList[#PriorityList + 1] = {Name = Value[1],Mode = "Button",Value = false}
-                BodyPartsList[#BodyPartsList + 1] = {Name = Value[1],Mode = "Toggle",Value = Value[2]}
-            end
-
-            AimbotSection:Dropdown({Name = "Priority",Flag = "Aimbot/Priority",List = PriorityList})
-            AimbotSection:Dropdown({Name = "Body Parts",Flag = "Aimbot/BodyParts",List = BodyPartsList})
-        end
-        local AFOVSection = CombatTab:Section({Name = "Aimbot FOV Circle",Side = "Left"}) do
-            AFOVSection:Toggle({Name = "Enabled",Flag = "Aimbot/FOVCircle/Enabled",Value = true})
-            AFOVSection:Toggle({Name = "Filled",Flag = "Aimbot/FOVCircle/Filled",Value = false})
-            AFOVSection:Colorpicker({Name = "Color",Flag = "Aimbot/FOVCircle/Color",Value = {1,0.66666662693024,1,0.25,false}})
-            AFOVSection:Slider({Name = "NumSides",Flag = "Aimbot/FOVCircle/NumSides",Min = 3,Max = 100,Value = 14})
-            AFOVSection:Slider({Name = "Thickness",Flag = "Aimbot/FOVCircle/Thickness",Min = 1,Max = 10,Value = 2})
-        end]]
         local SilentAimSection = CombatTab:Section({Name = "Silent Aim",Side = "Left"}) do
             SilentAimSection:Dropdown({HideName = true,Flag = "SilentAim/Mode",List = {
                 {Name = "FindPartOnRayWithIgnoreList",Mode = "Toggle"},
@@ -105,39 +73,6 @@ local Window = Parvus.Utilities.UI:Window({
             SAFOVSection:Slider({Name = "NumSides",Flag = "SilentAim/FOVCircle/NumSides",Min = 3,Max = 100,Value = 14})
             SAFOVSection:Slider({Name = "Thickness",Flag = "SilentAim/FOVCircle/Thickness",Min = 1,Max = 10,Value = 2})
         end
-        --[[local TriggerSection = CombatTab:Section({Name = "Trigger",Side = "Right"}) do
-            TriggerSection:Toggle({Name = "Enabled",Flag = "Trigger/Enabled",Value = false})
-            :Keybind({Flag = "Trigger/Keybind",Value = "MouseButton2",Mouse = true,DisableToggle = true,
-            Callback = function(Key,KeyDown) Trigger = Window.Flags["Trigger/Enabled"] and KeyDown end})
-
-            TriggerSection:Toggle({Name = "Always Enabled",Flag = "Trigger/AlwaysEnabled",Value = false})
-            TriggerSection:Toggle({Name = "Hold Mouse Button",Flag = "Trigger/HoldMouseButton",Value = false})
-            TriggerSection:Toggle({Name = "Prediction",Flag = "Trigger/Prediction",Value = false})
-
-            TriggerSection:Toggle({Name = "Team Check",Flag = "Trigger/TeamCheck",Value = false})
-            TriggerSection:Toggle({Name = "Distance Check",Flag = "Trigger/DistanceCheck",Value = false})
-            TriggerSection:Toggle({Name = "Visibility Check",Flag = "Trigger/VisibilityCheck",Value = false})
-
-            TriggerSection:Slider({Name = "Click Delay",Flag = "Trigger/Delay",Min = 0,Max = 1,Precise = 2,Value = 0.15,Unit = "sec"})
-            TriggerSection:Slider({Name = "Distance Limit",Flag = "Trigger/DistanceLimit",Min = 25,Max = 1000,Value = 250,Unit = "studs"})
-            TriggerSection:Slider({Name = "Field Of View",Flag = "Trigger/FieldOfView",Min = 0,Max = 500,Value = 25,Unit = "r"})
-
-            local PriorityList,BodyPartsList = {{Name = "Closest",Mode = "Button",Value = true},{Name = "Random",Mode = "Button"}},{}
-            for Index,Value in pairs(KnownBodyParts) do
-                PriorityList[#PriorityList + 1] = {Name = Value[1],Mode = "Button",Value = false}
-                BodyPartsList[#BodyPartsList + 1] = {Name = Value[1],Mode = "Toggle",Value = Value[2]}
-            end
-
-            TriggerSection:Dropdown({Name = "Priority",Flag = "Trigger/Priority",List = PriorityList})
-            TriggerSection:Dropdown({Name = "Body Parts",Flag = "Trigger/BodyParts",List = BodyPartsList})
-        end
-        local TFOVSection = CombatTab:Section({Name = "Trigger FOV Circle",Side = "Right"}) do
-            TFOVSection:Toggle({Name = "Enabled",Flag = "Trigger/FOVCircle/Enabled",Value = true})
-            TFOVSection:Toggle({Name = "Filled",Flag = "Trigger/FOVCircle/Filled",Value = false})
-            TFOVSection:Colorpicker({Name = "Color",Flag = "Trigger/FOVCircle/Color",Value = {0.0833333358168602,0.6666666269302368,1,0.25,false}})
-            TFOVSection:Slider({Name = "NumSides",Flag = "Trigger/FOVCircle/NumSides",Min = 3,Max = 100,Value = 14})
-            TFOVSection:Slider({Name = "Thickness",Flag = "Trigger/FOVCircle/Thickness",Min = 1,Max = 10,Value = 2})
-        end]]
     end
     local VisualsSection = Parvus.Utilities:ESPSection(Window,"Visuals","ESP/Player",true,true,true,true,true,true) do
         VisualsSection:Colorpicker({Name = "Ally Color",Flag = "ESP/Player/Ally",Value = {0.3333333432674408,0.6666666269302368,1,0,false}})
@@ -154,8 +89,6 @@ Parvus.Utilities:SetupWatermark(Window)
 Parvus.Utilities:SetupLighting(Window.Flags)
 Parvus.Utilities.Drawing.SetupCursor(Window)
 Parvus.Utilities.Drawing.SetupCrosshair(Window.Flags)
---Parvus.Utilities.Drawing.FOVCircle("Aimbot",Window.Flags)
---Parvus.Utilities.Drawing.FOVCircle("Trigger",Window.Flags)
 Parvus.Utilities.Drawing.FOVCircle("SilentAim",Window.Flags)
 
 local WallCheckParams = RaycastParams.new()
@@ -391,11 +324,15 @@ OldNamecall = hookmetamethod(game,"__namecall",function(Self,...)
     if getnamecallmethod() == "Raycast" then
             local Args = {...}
 
+            print(Args[1])
+            print(Camera.CFrame.Position)
+            print(Args[2])
+            print(SilentAim[3].Position)
             if Args[1] == Camera.CFrame.Position then
                 Args[2] = SilentAim[3].Position - Camera.CFrame.Position
+
+                return OldNamecall(Self,unpack(Args))
             end
-            
-            return OldNamecall(Self,unpack(Args))
     end
 
     return OldNamecall(Self,...)
@@ -476,7 +413,7 @@ Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 end)
 
 for Index,Player in pairs(PlayerService:GetPlayers()) do
-    if Player == LocalPlayer then continue end
+    if Player == LocalPlayer then end
     Parvus.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
 end
 PlayerService.PlayerAdded:Connect(function(Player)
